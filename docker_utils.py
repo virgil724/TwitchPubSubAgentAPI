@@ -1,6 +1,6 @@
 import docker
 import os
-from main import CreateTLD
+from CreateTLD import CreateTLD
 from model import TokenLogin, TokenLoginId
 
 

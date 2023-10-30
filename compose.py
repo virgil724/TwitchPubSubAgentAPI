@@ -1,6 +1,9 @@
+import json
+import os
 import yaml
 import requests
 import random
+
 
 
 def getAccessTokenUsername():
@@ -48,6 +51,35 @@ def validateToken(token):
         return True
     return False
 
+
+APIKEY = os.getenv("APIKEY")
+ROOTURL = os.getenv("ROOTURL")
+
+def refreshToken(oldToken: str):
+    headers = {
+        "apikey": APIKEY,
+        "authorization": f"Bearer {APIKEY}",
+    }
+    payload = json.dumps({"oldToken": oldToken})
+    requests.post(f"{ROOTURL}/functions/v1/oauth_flow", headers=headers, data=payload)
+
+
+def deleteToken(oldToken: str):
+    url = f"{ROOTURL}/rest/v1/TwitchToken"
+
+    querystring = {"access_token": oldToken}
+
+    headers = {
+        "apikey": APIKEY,
+        "authorization": f"Bearer {APIKEY}",
+    }
+
+    response = requests.request("DELETE", url, headers=headers, params=querystring)
+
+    if response.ok == True:
+        return True
+    return False
+
 if __name__=="main":
     with open("docker-compose.yml", "r") as stream:
         data = yaml.safe_load(stream)
@@ -85,3 +117,4 @@ if __name__=="main":
     yaml.Dumper.ignore_aliases = lambda *args: True
     with open("test.yaml", "w") as f:
         yaml.dump(data, f)
+
