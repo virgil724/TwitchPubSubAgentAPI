@@ -39,6 +39,7 @@ def getIdwithLogin(token, logins):
 
 
 def validateToken(token):
+    print("Token Validate Progress")
     url = "https://id.twitch.tv/oauth2/validate"
 
     headers = {
@@ -62,7 +63,7 @@ def refreshToken(oldToken: str):
         "authorization": f"Bearer {APIKEY}",
     }
     payload = json.dumps({"oldToken": oldToken})
-    requests.post(f"{ROOTURL}/functions/v1/oauth_flow", headers=headers, data=payload)
+    requests.post(f"{ROOTURL}/functions/v1/oauth_flow/refresh", headers=headers, data=payload)
 
 
 def deleteToken(oldToken: str):

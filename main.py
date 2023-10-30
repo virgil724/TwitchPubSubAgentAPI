@@ -32,7 +32,9 @@ def check_api_key(key: str = Security(header_scheme)):
 def container_modified(TL: TokenLoginAction, key: str = Depends(check_api_key)):
     match TL.action:
         case Action.New:
+            print("Enter New Container Flow")
             TLD = CreateTLD(TL)
+
             if not validateToken(TL.token):
                 raise HTTPException(
                     detail="Token not validate", status_code=status.HTTP_400_BAD_REQUEST
