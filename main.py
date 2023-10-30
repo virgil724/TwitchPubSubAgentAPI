@@ -1,4 +1,4 @@
-import secrets, os
+import secrets, os, requests, json
 
 from fastapi import Depends, FastAPI, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
@@ -10,9 +10,10 @@ from model import Action, TokenLogin, TokenLoginAction, TokenLoginId
 from compose import getIdwithLogin, validateToken
 
 
-
 load_dotenv()
 token = os.getenv("TOKEN")
+APIKEY = os.getenv("APIKEY")
+ROOTURL = os.getenv("ROOTURL")
 app = FastAPI()
 header_scheme = APIKeyHeader(name="x-key")
 
@@ -28,8 +29,46 @@ def check_api_key(key: str = Security(header_scheme)):
         return key
 
 
+def refreshToken(oldToken: str):
+    headers = {
+        "apikey": APIKEY,
+        "authorization": f"Bearer {APIKEY}",
+    }
+    payload = json.dumps({"oldToken": oldToken})
+    requests.post(f"{ROOTURL}/functions/v1/oauth_flow", headers=headers, data=payload)
+
+
+def deleteToken(oldToken: str):
+    url = f"{ROOTURL}/rest/v1/TwitchToken"
+
+    querystring = {"access_token": oldToken}
+
+    headers = {
+        "apikey": APIKEY,
+        "authorization": f"Bearer {APIKEY}",
+    }
+
+    response = requests.request("DELETE", url, headers=headers, params=querystring)
+
+    if response.ok == True:
+        return True
+    return False
+
+
 def CreateTLD(TL: TokenLogin):
-    login_id = getIdwithLogin(TL.token, [TL.login])
+    try:
+        login_id = getIdwithLogin(TL.token, [TL.login])
+    except Exception as e:
+        print(e)
+        try:
+            refreshToken(TL.token)
+            raise HTTPException(
+                detail="Token Been Refresh", status_code=status.HTTP_202_ACCEPTED
+            )
+        except Exception as e:
+            print(e)
+            if deleteToken(TL.token):
+                raise HTTPException(detail="Token Expired", status_code=400)
     numbers = [t[1] for t in login_id]
     loginid = numbers[0]
     TLD = TokenLoginId(**TL.model_dump(), login_id=loginid)
