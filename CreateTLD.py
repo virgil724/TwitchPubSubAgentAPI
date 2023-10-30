@@ -8,6 +8,10 @@ from fastapi import HTTPException, status
 def CreateTLD(TL: TokenLogin):
     try:
         login_id = getIdwithLogin(TL.token, [TL.login])
+        numbers = [t[1] for t in login_id]
+        loginid = numbers[0]
+        TLD = TokenLoginId(**TL.model_dump(), login_id=loginid)
+        return TLD
     except Exception as e:
         print(e)
         try:
@@ -19,7 +23,4 @@ def CreateTLD(TL: TokenLogin):
             print(e)
             if deleteToken(TL.token):
                 raise HTTPException(detail="Token Expired", status_code=400)
-    numbers = [t[1] for t in login_id]
-    loginid = numbers[0]
-    TLD = TokenLoginId(**TL.model_dump(), login_id=loginid)
-    return TLD
+    
