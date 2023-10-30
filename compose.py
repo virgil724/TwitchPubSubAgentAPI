@@ -52,10 +52,11 @@ def validateToken(token):
     return False
 
 
-APIKEY = os.getenv("APIKEY")
-ROOTURL = os.getenv("ROOTURL")
+
 
 def refreshToken(oldToken: str):
+    APIKEY = os.getenv("APIKEY")
+    ROOTURL = os.getenv("ROOTURL")
     headers = {
         "apikey": APIKEY,
         "authorization": f"Bearer {APIKEY}",
@@ -65,6 +66,8 @@ def refreshToken(oldToken: str):
 
 
 def deleteToken(oldToken: str):
+    APIKEY = os.getenv("APIKEY")
+    ROOTURL = os.getenv("ROOTURL")
     url = f"{ROOTURL}/rest/v1/TwitchToken"
 
     querystring = {"access_token": oldToken}
